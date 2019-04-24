@@ -1,2 +1,2 @@
-# chip8e
-Adventures in CHIP-8
+# chipee
+Adventures in CHIP-8.
