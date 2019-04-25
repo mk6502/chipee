@@ -25,6 +25,11 @@ int main(int argc, char** argv) {
         emulate_cycle();
         sdl_keypress(keypad);
 
+        if (should_quit()) {
+            stop_chipee_display();
+            return 0;
+        }
+
         if (draw_flag) {
             draw_screen(gfx);
         }
@@ -34,6 +39,5 @@ int main(int argc, char** argv) {
     }
 
     stop_chipee_display();
-
     return 1;
 }

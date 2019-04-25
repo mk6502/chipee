@@ -5,6 +5,7 @@
 void init_chipee_display();
 void draw_screen(unsigned char* gfx);
 void sdl_keypress(unsigned char* keypad);
+int should_quit();
 void stop_chipee_display();
 
 #endif

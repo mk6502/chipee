@@ -10,7 +10,7 @@ SDL_Scancode keymappings[16] = {
     SDL_SCANCODE_A, SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F,
     SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_C, SDL_SCANCODE_V
 };
-
+int SHOULD_QUIT = 0;
 
 void init_chipee_display() {
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -58,8 +58,7 @@ void sdl_keypress(unsigned char* keypad) {
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
     if (state[SDL_SCANCODE_ESCAPE]) {
-        stop_chipee_display();
-        // TODO: actually exit the program
+        SHOULD_QUIT = 1;
     }
 
     for (int keycode = 0; keycode < 16; keycode++) {
@@ -68,6 +67,11 @@ void sdl_keypress(unsigned char* keypad) {
 
     return;
 }
+
+int should_quit() {
+    return SHOULD_QUIT;
+}
+
 
 void stop_chipee_display() {
     SDL_DestroyWindow(screen);
