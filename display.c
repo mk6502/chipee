@@ -64,8 +64,6 @@ void sdl_keypress(unsigned char* keypad) {
     for (int keycode = 0; keycode < 16; keycode++) {
         keypad[keycode] = state[keymappings[keycode]];
     }
-
-    return;
 }
 
 int should_quit() {
