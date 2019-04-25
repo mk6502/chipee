@@ -2,42 +2,40 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "chipee.h"
+#include "display.h"
 
-void draw_screen() {
-    for (int y = 0; y < 32; y++) {
-        for (int x = 0; x < 64; x++) {
-            if (gfx[x + (y * 64)]) {
-                printf("\u2588");
-            } else {
-                printf(" ");
-            }
-        }
-        printf("\n");
-    }
-}
 
 int main(int argc, char** argv) {
     // load fonts
     load_fonts();
+
+    srand((unsigned int)time(NULL));
 
     // load ROM
     // load_rom("roms/ibm.ch8");
     // load_rom("roms/logo.ch8");
     // load_rom("roms/sierpinski.ch8");
     // load_rom("roms/trip8.ch8");
-    load_rom("roms/maze.ch8");
+    // load_rom("roms/maze.ch8");
+    load_rom("roms/pong1p.ch8");
+
+    // initialize display
+    init_chipee_display();
 
     // game loop
     while (1) {
         emulate_cycle();
+        sdl_keypress(keypad);
 
         if (draw_flag) {
-            draw_screen();
+            draw_screen(gfx);
         }
 
-        // hack to limit to ~60fps
-        usleep(15000);
+        // hack to limit fps
+        usleep(1000);
     }
+
+    stop_chipee_display();
 
     return 1;
 }

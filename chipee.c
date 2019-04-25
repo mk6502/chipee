@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 #include "chipee.h"
 
 //
@@ -292,7 +293,25 @@ void emulate_cycle() {
             pc += 2;
             break;
         case 0xE000:
-            printf("Unknown op: 0x%X\n", op);
+            x = (op & 0x0F00) >> 8;
+
+            switch (op & 0x00FF) {
+                case 0x009E:
+                    if (keypad[V[x]]) {
+                        pc += 2;
+                    }
+                    pc += 2;
+                    break;
+                case 0x00A1:
+                    if (!keypad[V[x]]) {
+                        pc += 2;
+                    }
+                    pc += 2;
+                    break;
+                default:
+                    printf("Unknown op: 0x%X\n", op);
+                    break;
+            }
             break;
         case 0xF000:
             x = (op & 0x0F00) >> 8;
@@ -313,6 +332,16 @@ void emulate_cycle() {
                     break;
                 case 0x001E:
                     I += V[x];
+                    pc += 2;
+                    break;
+                case 0x0029:
+                    I = V[x] * 0x5;
+                    pc += 2;
+                    break;
+                case 0x0033:
+                    memory[I] = V[x] / 100;
+                    memory[I + 1] = V[x] % 100 / 10;
+                    memory[I + 2] = V[x] % 10;
                     pc += 2;
                     break;
                 case 0x0055:
