@@ -64,7 +64,10 @@ unsigned char sound_timer = 0;
 // whether we need to update the screen in this cycle
 unsigned char draw_flag = 0;
 
-void load_fonts() {
+void init_cpu() {
+    srand((unsigned int)time(NULL));
+
+    // load fonts:
     for (int i = 0; i < 80; i++) {
         memory[i] = chip8_fontset[i];
     }

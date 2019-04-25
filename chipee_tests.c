@@ -14,10 +14,9 @@ void load_test_rom() {
     }
 }
 
-int main(int argc, char** argv)
-{
-    // load fonts
-    load_fonts();
+int main(int argc, char** argv) {
+    // initialize CPU
+    init_cpu();
 
     // TODO: test correctness of fonts
 

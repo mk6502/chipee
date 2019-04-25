@@ -6,10 +6,8 @@
 
 
 int main(int argc, char** argv) {
-    // load fonts
-    load_fonts();
-
-    srand((unsigned int)time(NULL));
+    // initialize CPU
+    init_cpu();
 
     // load ROM
     // load_rom("roms/ibm.ch8");

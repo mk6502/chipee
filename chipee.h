@@ -18,7 +18,7 @@ extern unsigned char delay_timer;
 extern unsigned char sound_timer;
 extern unsigned char draw_flag;
 
-void load_fonts();
+void init_cpu();
 void load_rom(char* filename);
 void emulate_cycle();
 int main(int argc, char** argv);

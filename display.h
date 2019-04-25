@@ -7,6 +7,4 @@ void draw_screen(unsigned char* gfx);
 void sdl_keypress(unsigned char* keypad);
 void stop_chipee_display();
 
-extern SDL_Window* screen;
-
 #endif
