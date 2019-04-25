@@ -4,7 +4,6 @@
 SDL_Window* screen;
 SDL_Renderer* renderer;
 SDL_Texture* screen_texture;
-
 SDL_Scancode keymappings[16] = {
     SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4,
     SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_R,
@@ -22,7 +21,7 @@ void init_chipee_display() {
         SDL_WINDOWPOS_CENTERED,
         64*8,
         32*8,
-        SDL_WINDOW_OPENGL
+        0
     );
     renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED);
     screen_texture = SDL_CreateTexture(renderer,
@@ -31,17 +30,6 @@ void init_chipee_display() {
         64*8,
         32*8
     );
-
-    int is_running = 1;
-    SDL_Event event;
-    while (is_running) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                is_running = 0;
-            }
-        }
-        SDL_Delay(1);
-    }
 }
 
 void draw_screen(unsigned char* gfx) {
@@ -70,7 +58,7 @@ void sdl_keypress(unsigned char* keypad) {
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
     if (state[SDL_SCANCODE_ESCAPE]) {
-        SDL_Quit();
+        stop_chipee_display();
         // TODO: actually exit the program
     }
 

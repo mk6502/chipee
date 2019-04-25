@@ -1,5 +1,5 @@
-// #ifndef CHIPEE_DISPLAY_H_
-// #define CHIPEE_DISPLAY_H_
+#ifndef CHIPEE_DISPLAY_H_
+#define CHIPEE_DISPLAY_H_
 #include <SDL2/SDL.h>
 
 void init_chipee_display();
@@ -9,4 +9,4 @@ void stop_chipee_display();
 
 extern SDL_Window* screen;
 
-// #endif
+#endif
