@@ -52,17 +52,25 @@ void draw_screen(unsigned char* gfx) {
     SDL_RenderPresent(renderer);
 }
 
-void sdl_keypress(unsigned char* keypad) {
-    SDL_PumpEvents();
+void sdl_event_handler(unsigned char* keypad) {
+    SDL_Event event;
 
-    const Uint8* state = SDL_GetKeyboardState(NULL);
+    if (SDL_PollEvent(&event)) {
+        const Uint8* state = SDL_GetKeyboardState(NULL);
+        switch (event.type) {
+            case SDL_QUIT:
+                SHOULD_QUIT = 1;
+                break;
+            default:
+                if (state[SDL_SCANCODE_ESCAPE]) {
+                    SHOULD_QUIT = 1;
+                }
 
-    if (state[SDL_SCANCODE_ESCAPE]) {
-        SHOULD_QUIT = 1;
-    }
-
-    for (int keycode = 0; keycode < 16; keycode++) {
-        keypad[keycode] = state[keymappings[keycode]];
+                for (int keycode = 0; keycode < 16; keycode++) {
+                    keypad[keycode] = state[keymappings[keycode]];
+                }
+                break;
+        }
     }
 }
 

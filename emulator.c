@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     // game loop
     while (1) {
         emulate_cycle();
-        sdl_keypress(keypad);
+        sdl_event_handler(keypad);
 
         if (should_quit()) {
             stop_chipee_display();
