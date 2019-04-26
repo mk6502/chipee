@@ -88,21 +88,19 @@ void emulate_cycle() {
     unsigned short op = memory[pc] << 8 | memory[pc + 1];
     // printf("op: %X\n", op);
     // printf("pc: %X\n", pc);
-    unsigned short x = 0;
-    unsigned short y = 0;
+    unsigned short x = (op & 0x0F00) >> 8;
+    unsigned short y = (op & 0x00F0) >> 4;
 
     switch(op & 0xF000) {
         case 0x0000:
-            switch (op & 0x000F) {
-                case 0x0000: // 0x00E0: clear the screen
-                    // printf("clear screen\n");
+            switch (op & 0x00FF) {
+                case 0x00E0: // 0x00E0: clear the screen
                     for (int i = 0; i < 64 * 32; i++) {
                         gfx[i] = 0;
                     }
                     pc += 2;
                     break;
-                case 0x000E: // 0x00EE: return from subroutine
-                    // printf("return from subroutine\n");
+                case 0x00EE: // 0x00EE: return from subroutine
                     pc = stack[sp];
                     sp--;
                     pc += 2;
@@ -112,36 +110,27 @@ void emulate_cycle() {
                     break;
             }
             break;
-        case 0x1000:
-            // printf("jump to address NNN\n");
+        case 0x1000: // 0x1NNN: jump to address NNN
             pc = op & 0x0FFF;
             break;
-        case 0x2000:
-            // printf("call subroutine at NNN\n");
+        case 0x2000: // 0x2NNN: call subroutine at NNN
             sp++; // increment the position we are at on the stack
             stack[sp] = pc; // we will need to return eventually, so keep our counter in the stack
-            pc = op & 0x0FFF; // set the program counter to NNN
+            pc = op & 0x0FFF;
             break;
-        case 0x3000:
-            // printf("3XNN: skip next instruction if Vx=NN\n");
-            x = (op & 0x0F00) >> 8;
+        case 0x3000: // 0x3XNN: skip next instruction if V[x] == NN
             if (V[x] == (op & 0x00FF)) {
                 pc += 2;
             }
             pc += 2;
             break;
-        case 0x4000:
-            // printf("4XNN: skip next instruction if Vx!=NN\n");
-            x = (op & 0x0F00) >> 8;
+        case 0x4000: // 4XNN: skip next instruction if V[x] != NN
             if (V[x] != (op & 0x00FF)) {
                 pc += 2;
             }
             pc += 2;
             break;
-        case 0x5000:
-            // printf("5XY0: skip next instruction if Vx=Vy\n");
-            x = (op & 0x0F00) >> 8;
-            y = (op & 0x00F0) >> 4;
+        case 0x5000: // 5XY0: skip next instruction if V[x] == V[y]
             if (V[x] == V[y]) {
                 pc += 4;
             }
@@ -149,43 +138,29 @@ void emulate_cycle() {
                 pc += 2;
             }
             break;
-        case 0x6000: // 6XNN: Set Vx = NN
-            // printf("Set Vx = NN\n");
-            x = (op & 0x0F00) >> 8;
-            // Why 8?
-            // op = 0x6108 ANDed with 0x0F00 = 0x0100 which is decimal 256, binary: 100000000
-            // so you need to shift it right 8 places
+        case 0x6000: // 6XNN: Set V[x] = NN
             V[x] = op & 0x00FF;
             pc += 2;
             break;
-        case 0x7000:
-            // printf("7XNN: add NN to Vx\n");
-            x = (op & 0x0F00) >> 8;
+        case 0x7000: // 7XNN: add NN to V[x]
             V[x] += op & 0x00FF;
             pc += 2;
             break;
         case 0x8000:
-            x = (op & 0x0F00) >> 8;
-            y = (op & 0x00F0) >> 4;
-
             switch(op & 0x000F) {
-                case 0x0000:
-                    // printf("8XY0: set Vx = Vy\n");
+                case 0x0000: // 8XY0: set V[x] = V[y]
                     V[x] = V[y];
                     pc += 2;
                     break;
-                case 0x0001:
-                    // printf("8XY1: set Vx = Vx OR Vy\n");
+                case 0x0001: // 8XY1: set V[x] = V[x] OR V[y]
                     V[x] = V[x] | V[y];
                     pc += 2;
                     break;
-                case 0x0002:
-                    // printf("8XY2: set Vx = Vx AND Vy\n");
+                case 0x0002: // 8XY2: set V[x] = V[x] AND V[y]
                     V[x] = V[x] & V[y];
                     pc += 2;
                     break;
-                case 0x0003:
-                    // printf("8XY3: set Vx = Vx XOR Vy\n");
+                case 0x0003: // 8XY3: set V[x] = V[x] XOR V[y]
                     V[x] = V[x] ^ V[y];
                     pc += 2;
                     break;
@@ -231,8 +206,6 @@ void emulate_cycle() {
             break;
         case 0x9000:
             // printf("9XY0: skip next instruction if Vx != Vy\n");
-            x = (op & 0x0F00) >> 8;
-            y = (op & 0x00F0) >> 4;
             if (V[x] != V[y]) {
                 pc += 2;
             }
@@ -249,7 +222,7 @@ void emulate_cycle() {
             break;
         case 0xC000:
             // printf("CXNN: set V[X] = random byte AND NN\n");
-            V[(op & 0x0F00)] = rand() & (op & 0x00FF);
+            V[x] = rand() & (op & 0x00FF);
             pc += 2;
             break;
         case 0xD000:
@@ -269,8 +242,8 @@ void emulate_cycle() {
 
             */
             // printf("0xDXYN: drawing!\n");
-            x = V[(op & 0x0F00) >> 8];
-            y = V[(op & 0x00F0) >> 4];
+            draw_flag = 1;
+
             unsigned short height = op & 0x000F;
             unsigned short pixel;
 
@@ -279,20 +252,17 @@ void emulate_cycle() {
                 pixel = memory[I + yline];
                 for (int xline = 0; xline < 8; xline++) {
                     if ((pixel & (0x80 >> xline)) != 0) {
-                        if (gfx[(x + xline + ((y + yline) * 64))] == 1) {
+                        if (gfx[(V[x] + xline + ((V[y] + yline) * 64))] == 1) {
                             V[0xF] = 1;
                         }
-                        gfx[x + xline + ((y + yline) * 64)] ^= 1;
+                        gfx[V[x] + xline + ((V[y] + yline) * 64)] ^= 1;
                     }
                 }
             }
  
-            draw_flag = 1;
             pc += 2;
             break;
         case 0xE000:
-            x = (op & 0x0F00) >> 8;
-
             switch (op & 0x00FF) {
                 case 0x009E:
                     if (keypad[V[x]]) {
@@ -312,9 +282,6 @@ void emulate_cycle() {
             }
             break;
         case 0xF000:
-            x = (op & 0x0F00) >> 8;
-            y = (op & 0x00F0) >> 4;
-
             switch (op & 0x00FF) {
                 case 0x0007:
                     V[x] = delay_timer;
