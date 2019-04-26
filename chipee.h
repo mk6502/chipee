@@ -1,7 +1,3 @@
-//
-// CHIPEE
-//
-
 #ifndef CHIPEE_H_
 #define CHIPEE_H_
 
