@@ -124,13 +124,13 @@ void emulate_cycle() {
             }
             pc += 2;
             break;
-        case 0x4000: // 4XNN: skip next instruction if V[x] != NN
+        case 0x4000: // 0x4XNN: skip next instruction if V[x] != NN
             if (V[x] != (op & 0x00FF)) {
                 pc += 2;
             }
             pc += 2;
             break;
-        case 0x5000: // 5XY0: skip next instruction if V[x] == V[y]
+        case 0x5000: // 0x5XY0: skip next instruction if V[x] == V[y]
             if (V[x] == V[y]) {
                 pc += 4;
             }
@@ -138,34 +138,33 @@ void emulate_cycle() {
                 pc += 2;
             }
             break;
-        case 0x6000: // 6XNN: Set V[x] = NN
+        case 0x6000: // 0x6XNN: Set V[x] = NN
             V[x] = op & 0x00FF;
             pc += 2;
             break;
-        case 0x7000: // 7XNN: add NN to V[x]
+        case 0x7000: // 0x7XNN: add NN to V[x]
             V[x] += op & 0x00FF;
             pc += 2;
             break;
         case 0x8000:
             switch(op & 0x000F) {
-                case 0x0000: // 8XY0: set V[x] = V[y]
+                case 0x0000: // 0x8XY0: set V[x] = V[y]
                     V[x] = V[y];
                     pc += 2;
                     break;
-                case 0x0001: // 8XY1: set V[x] = V[x] OR V[y]
+                case 0x0001: // 0x8XY1: set V[x] = V[x] OR V[y]
                     V[x] = V[x] | V[y];
                     pc += 2;
                     break;
-                case 0x0002: // 8XY2: set V[x] = V[x] AND V[y]
+                case 0x0002: // 0x8XY2: set V[x] = V[x] AND V[y]
                     V[x] = V[x] & V[y];
                     pc += 2;
                     break;
-                case 0x0003: // 8XY3: set V[x] = V[x] XOR V[y]
+                case 0x0003: // 0x8XY3: set V[x] = V[x] XOR V[y]
                     V[x] = V[x] ^ V[y];
                     pc += 2;
                     break;
-                case 0x0004:
-                    // printf("8XY4: set Vx = Vx + Vy, set V[F] = carry\n");
+                case 0x0004: // 0x8XY4: set V[x] = V[x] + V[y], set V[F] = carry
                     V[0xF] = 0;
                     if ((V[x] + V[y]) > 0xFF) {
                         V[0xF] = 1;
@@ -173,9 +172,9 @@ void emulate_cycle() {
                     V[x] += V[y];
                     pc += 2;
                     break;
-                case 0x0005:
-                    // printf("8XY5: set Vx = Vx - Vy, set V[F] = NOT borrow\n");
-                    // If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
+                case 0x0005: // 0x8XY5: set V[x] = V[x] - V[y], set V[F] = NOT borrow
+                    // If V[x] > V[y], set V[F] to 1, otherwise 0.
+                    // Then set V[x] = V[x] - V[y]
                     V[0xF] = 0;
                     if (V[x] > V[y]) {
                         V[0xF] = 1;
@@ -183,51 +182,52 @@ void emulate_cycle() {
                     V[x] -= V[y];
                     pc += 2;
                     break;
-                // case 0x0006:
-                //     // printf("8XY6: set Vx = Vx SHR 1\n");
-                //     // If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0. Then Vx is divided by 2.
-                //     pc += 2;
-                //     break;
-                // case 0x0007:
-                //     // printf("8XY7: set Vx = Vy - Vx, set V[F] = NOT borrow\n");
-                //     // If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.
-                //     pc += 2;
-                //     break;
-                // case 0x000E:
-                //     // printf("8XYE: Set Vx = Vx SHL 1\n");
-                //     // If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. Then Vx is multiplied by 2.
-                //     pc += 2;
-                //     break;
+                case 0x0006: // 0x8XY6: set V[x] = V[x] SHR 1
+                    // Set V[F] to the remainder of dividing by 2, then divide V[x] by 2
+                    V[0xF] = V[x] % 2;
+                    V[x] /= 2;
+                    pc += 2;
+                    break;
+                case 0x0007: // 0x8XY7: set V[x] = V[y] - V[x], set V[F] = NOT borrow
+                    // If V[y] > V[x], set V[F] to 1, otherwise 0. Then set V[x] = V[y] - V[x]
+                    V[0xF] = 0;
+                    if (V[y] > V[x]) {
+                        V[0xF] = 1;
+                    }
+                    V[x] = V[y] - V[x];
+                    pc += 2;
+                    break;
+                case 0x000E: // 0x8XYE: Set V[x] = V[x] SHL 1
+                    // If the most-significant bit of V[x] is 1, set V[F] to 1,
+                    // otherwise set to 0. Then V[x] is multiplied by 2.
+                    V[0xF] = (V[x] >> 7);
+                    V[x] *= 2;
+                    pc += 2;
+                    break;
                 default:
                     printf("Unknown op: 0x%X\n", op);
                     break;
             }
-            
             break;
-        case 0x9000:
-            // printf("9XY0: skip next instruction if Vx != Vy\n");
+        case 0x9000: // 0x9XY0: skip next instruction if V[x] != V[y]
             if (V[x] != V[y]) {
                 pc += 2;
             }
             pc += 2;
             break;
-        case 0xA000: // ANNN: Set I to the address NNN
-            // printf("ANNN: set I to the address NNN\n");
+        case 0xA000: // 0xANNN: Set I to the address NNN
             I = op & 0x0FFF;
             pc += 2;
             break;
-        case 0xB000:
-            // printf("BNNN: jump to location NNN + V[0]\n");
+        case 0xB000: // 0xBNNN: jump to location NNN + V[0]
             pc = (op & 0x0FFF) + V[0];
             break;
-        case 0xC000:
-            // printf("CXNN: set V[X] = random byte AND NN\n");
+        case 0xC000: // 0xCXNN: set V[X] = random byte AND NN
             V[x] = rand() & (op & 0x00FF);
             pc += 2;
             break;
-        case 0xD000:
+        case 0xD000: // 0xDXYN: drawing!
             /* 
-
             Draws a sprite at coordinate (VX, VY)
             that has a width of 8 pixels and a 
             height of N pixels. Each row of 
@@ -239,9 +239,7 @@ void emulate_cycle() {
             if any screen pixels are flipped from set
             to unset when the sprite is
             drawn, and to 0 if that doesn’t happen.
-
             */
-            // printf("0xDXYN: drawing!\n");
             draw_flag = 1;
 
             unsigned short height = op & 0x000F;
@@ -264,13 +262,13 @@ void emulate_cycle() {
             break;
         case 0xE000:
             switch (op & 0x00FF) {
-                case 0x009E:
+                case 0x009E: // 0xEX9E: Skip next instruction if keypad[V[x]] is pressed
                     if (keypad[V[x]]) {
                         pc += 2;
                     }
                     pc += 2;
                     break;
-                case 0x00A1:
+                case 0x00A1: // 0xEXA1: Skip next instruction if keypad[V[x]] is NOT pressed
                     if (!keypad[V[x]]) {
                         pc += 2;
                     }
@@ -283,39 +281,47 @@ void emulate_cycle() {
             break;
         case 0xF000:
             switch (op & 0x00FF) {
-                case 0x0007:
+                case 0x0007: // 0xFX07: set V[x] = delay timer
                     V[x] = delay_timer;
                     pc += 2;
                     break;
-                case 0x0015:
+                // case 0x000A: // 0xFX0A: wait for a key press, then store the value of the key in V[x]
+                //     // TODO!!!!
+                //     pc += 2;
+                //     break;
+                case 0x0015: // 0xFX15: set delay timer = V[x]
                     delay_timer = V[x];
                     pc += 2;
                     break;
-                case 0x0018:
+                case 0x0018: // 0xFX18: set sound timer = V[x]
                     sound_timer = V[x];
                     pc += 2;
                     break;
-                case 0x001E:
+                case 0x001E: // 0xFX1E: set I = I + V[x]
                     I += V[x];
                     pc += 2;
                     break;
-                case 0x0029:
-                    I = V[x] * 0x5;
+                case 0x0029: // 0xFX29: set I = location of sprite for digit V[x]
+                    I = V[x] * 5; // each digit is 5 bytes long
                     pc += 2;
                     break;
-                case 0x0033:
+                case 0x0033: // 0xFX33: store BCD(V[x]) in I, I+1, I+2
+                    // The interpreter takes the decimal value of V[x],
+                    // and places the hundreds digit in memory at location in I,
+                    // the tens digit at location I+1, and the ones digit at 
+                    // location I+2.
                     memory[I] = V[x] / 100;
                     memory[I + 1] = V[x] % 100 / 10;
                     memory[I + 2] = V[x] % 10;
                     pc += 2;
                     break;
-                case 0x0055:
+                case 0x0055: // 0xFX55: 
                     for (int i = 0; i <= x; i++) {
                         memory[I + i] = V[i];
                     }
                     pc += 2;
                     break;
-                case 0x0065:
+                case 0x0065: // 0xFX65: load V[0] through V[x] from memory starting at location I
                     for (int i = 0; i <= x; i++) {
                         V[i] = memory[I + i];
                     }
@@ -338,7 +344,7 @@ void emulate_cycle() {
  
     // beep and update sound timer
     if (sound_timer > 0) {
-        printf("BEEP!\n");
+        printf("BEEP!\n"); // TODO: have a real sound!
         sound_timer--;
     }
 }
