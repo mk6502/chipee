@@ -257,7 +257,6 @@ void emulate_cycle() {
                     }
                 }
             }
- 
             pc += 2;
             break;
         case 0xE000:
@@ -285,10 +284,15 @@ void emulate_cycle() {
                     V[x] = delay_timer;
                     pc += 2;
                     break;
-                // case 0x000A: // 0xFX0A: wait for a key press, then store the value of the key in V[x]
-                //     // TODO!!!!
-                //     pc += 2;
-                //     break;
+                case 0x000A: // 0xFX0A: wait for a key press, then store the value of the key in V[x]
+                    for (int i = 0; i < 16; i++) {
+                        if (keypad[i]) {
+                            V[x] = i;
+                            pc += 2;
+                            break;
+                        }
+                    }
+                    break;
                 case 0x0015: // 0xFX15: set delay timer = V[x]
                     delay_timer = V[x];
                     pc += 2;
