@@ -1,9 +1,8 @@
+#include <SDL2/SDL.h>
 #include "display.h"
-
 
 SDL_Window* screen;
 SDL_Renderer* renderer;
-SDL_Texture* screen_texture;
 SDL_Scancode keymappings[16] = {
     SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4,
     SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_R,
@@ -13,7 +12,7 @@ SDL_Scancode keymappings[16] = {
 int SHOULD_QUIT = 0;
 
 void init_chipee_display() {
-    SDL_Init(SDL_INIT_EVERYTHING);
+    SDL_Init(SDL_INIT_VIDEO);
 
     screen = SDL_CreateWindow(
         "Chipee",
@@ -24,12 +23,6 @@ void init_chipee_display() {
         0
     );
     renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED);
-    screen_texture = SDL_CreateTexture(renderer,
-        SDL_PIXELFORMAT_ARGB8888,
-        SDL_TEXTUREACCESS_STREAMING,
-        64*8,
-        32*8
-    );
 }
 
 void draw_screen(unsigned char* gfx) {

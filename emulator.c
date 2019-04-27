@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include "chipee.h"
@@ -6,15 +5,15 @@
 
 
 int main(int argc, char** argv) {
-    // initialize CPU
-    init_cpu();
-
-    // load ROM
     if (argc != 2) {
         printf("Usage: chipee rom.ch8\n");
         return 1;
     }
 
+    // initialize CPU
+    init_cpu();
+
+    // load ROM
     load_rom(argv[1]);
 
     // initialize display
@@ -26,8 +25,7 @@ int main(int argc, char** argv) {
         sdl_event_handler(keypad);
 
         if (should_quit()) {
-            stop_chipee_display();
-            return 0;
+            break;
         }
 
         if (draw_flag) {
@@ -39,5 +37,5 @@ int main(int argc, char** argv) {
     }
 
     stop_chipee_display();
-    return 1;
+    return 0;
 }
