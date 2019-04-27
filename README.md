@@ -7,6 +7,7 @@ Chipee's goals are:
 
 * Simplicity.
 * Code readability.
+* To be a learning tool for others.
 
 # Building #
 
@@ -25,3 +26,11 @@ Run the emulator with:
 Build and run the test suite by running:
 
     make test
+
+# FAQ #
+
+Q: Why C?
+A: Simplicity.
+
+Q: Does it support Super CHIP-8?
+A: No.
