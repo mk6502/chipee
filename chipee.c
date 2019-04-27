@@ -70,24 +70,26 @@ void init_cpu() {
 
 void load_rom(char* filename) {
     FILE* fileptr = fopen(filename, "rb");
-    fseek(fileptr, 0, SEEK_END); // Jump to the end of the file
-    long buffer_size = ftell(fileptr); // Get the current byte offset in the file
-    rewind(fileptr); // Jump back to the beginning of the file
 
-    char* buffer = (char *)malloc((buffer_size+1)*sizeof(char)); // Enough memory for file + \0
-    fread(buffer, buffer_size, 1, fileptr); // Read in the entire file
-    fclose(fileptr); // Close the file
+    // get size of the file for malloc:
+    fseek(fileptr, 0, SEEK_END);
+    long buffer_size = ftell(fileptr);
+    rewind(fileptr);
+
+    char* buffer = (char *)malloc((buffer_size+1) * sizeof(char)); // enough memory for file + \0
+    fread(buffer, buffer_size, 1, fileptr);
+    fclose(fileptr);
+
     for (int i = 0; i < buffer_size; i++) {
         memory[512 + i] = buffer[i]; // first 512 bytes are reserved
     }
+
     free(buffer);
 }
 
 void emulate_cycle() {
     draw_flag = 0;
     unsigned short op = memory[pc] << 8 | memory[pc + 1];
-    // printf("op: %X\n", op);
-    // printf("pc: %X\n", pc);
     unsigned short x = (op & 0x0F00) >> 8;
     unsigned short y = (op & 0x00F0) >> 4;
 
@@ -228,14 +230,14 @@ void emulate_cycle() {
             break;
         case 0xD000: // 0xDXYN: drawing!
             /* 
-            Draws a sprite at coordinate (VX, VY)
+            Draws a sprite at coordinate (V[x], V[y])
             that has a width of 8 pixels and a 
             height of N pixels. Each row of 
             8 pixels is read as bit-coded starting
             from memory location I; I value doesn’t
             change after the execution of this 
             instruction. 
-            As described above, VF is set to 1 
+            As described above, V[F] is set to 1 
             if any screen pixels are flipped from set
             to unset when the sprite is
             drawn, and to 0 if that doesn’t happen.
@@ -319,7 +321,7 @@ void emulate_cycle() {
                     memory[I + 2] = V[x] % 10;
                     pc += 2;
                     break;
-                case 0x0055: // 0xFX55: 
+                case 0x0055: // 0xFX55: store V[0] through V[x] in memory starting at location I
                     for (int i = 0; i <= x; i++) {
                         memory[I + i] = V[i];
                     }
