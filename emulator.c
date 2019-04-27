@@ -10,12 +10,12 @@ int main(int argc, char** argv) {
     init_cpu();
 
     // load ROM
-    // load_rom("roms/ibm.ch8");
-    // load_rom("roms/logo.ch8");
-    // load_rom("roms/sierpinski.ch8");
-    // load_rom("roms/trip8.ch8");
-    // load_rom("roms/maze.ch8");
-    load_rom("roms/pong1p.ch8");
+    if (argc != 2) {
+        printf("Usage: chipee rom.ch8\n");
+        return 1;
+    }
+
+    load_rom(argv[1]);
 
     // initialize display
     init_chipee_display();
