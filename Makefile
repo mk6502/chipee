@@ -1,5 +1,4 @@
 CC=cc
-CFLAGS=-I.
 CFLAGS=-Wall -I/usr/local/include
 LDFLAGS=-lm -lSDL2 -L/usr/local/lib
 
