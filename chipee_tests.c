@@ -18,8 +18,6 @@ int main(int argc, char** argv) {
     // initialize CPU
     init_cpu();
 
-    // TODO: test correctness of fonts
-
     // assert pc = 0x200
     printf("TEST: Assert pc = 0x200 at startup...\n");
     if (pc != 0x200) {

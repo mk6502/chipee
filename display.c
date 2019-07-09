@@ -71,7 +71,6 @@ int should_quit() {
     return SHOULD_QUIT;
 }
 
-
 void stop_chipee_display() {
     SDL_DestroyWindow(screen);
     SDL_Quit();
