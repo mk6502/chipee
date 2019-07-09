@@ -10,11 +10,19 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    char* rom_filename = argv[1];
+
     // initialize CPU
     init_cpu();
 
+    // check if ROM is accessible
+    if (!check_rom(rom_filename)) {
+        printf("Unable to open ROM!\n");
+        return 1;
+    }
+
     // load ROM
-    load_rom(argv[1]);
+    load_rom(rom_filename);
 
     // initialize display
     init_chipee_display();

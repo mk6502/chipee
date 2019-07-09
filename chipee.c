@@ -68,6 +68,17 @@ void init_cpu() {
     }
 }
 
+int check_rom(char* filename) {
+    FILE* fileptr;
+
+    if ((fileptr = fopen(filename, "rb"))) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
 void load_rom(char* filename) {
     FILE* fileptr = fopen(filename, "rb");
 
