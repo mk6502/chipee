@@ -59,6 +59,9 @@ unsigned char sound_timer = 0;
 // whether we need to update the screen in this cycle
 unsigned char draw_flag = 0;
 
+// whether we need to play a sound in this cycle
+unsigned char sound_flag = 0;
+
 void init_cpu() {
     srand((unsigned int)time(NULL));
 
@@ -100,6 +103,7 @@ void load_rom(char* filename) {
 
 void emulate_cycle() {
     draw_flag = 0;
+    sound_flag = 0;
     unsigned short op = memory[pc] << 8 | memory[pc + 1];
     unsigned short x = (op & 0x0F00) >> 8;
     unsigned short y = (op & 0x00F0) >> 4;
@@ -361,7 +365,7 @@ void emulate_cycle() {
  
     // beep and update sound timer
     if (sound_timer > 0) {
-        printf("BEEP!\n"); // TODO: have a real sound!
+        sound_flag = 1;
         sound_timer--;
     }
 }
