@@ -5,9 +5,9 @@ Adventures in CHIP-8.
 
 Chipee's goals are:
 
+* To be a learning tool for others.
 * Simplicity.
 * Code readability.
-* To be a learning tool for others.
 
 # Building
 
@@ -56,6 +56,3 @@ A: Simplicity.
 
 Q: Does it support Super CHIP-8?
 A: No.
-
-Q: Sound?
-A: Not yet!

@@ -3,9 +3,8 @@
 #include "chipee.h"
 
 #define TEST_ROM_LEN 6
-unsigned char test_rom[TEST_ROM_LEN] =
-{ 
-  0x65, 0xF1, 0x62, 0x08, 0xA2, 0x20
+unsigned char test_rom[TEST_ROM_LEN] = {
+        0x65, 0xF1, 0x62, 0x08, 0xA2, 0x20
 };
 
 void load_test_rom() {
@@ -14,7 +13,7 @@ void load_test_rom() {
     }
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     // initialize CPU
     init_cpu();
 
@@ -29,8 +28,6 @@ int main(int argc, char** argv) {
     }
 
     load_test_rom();
-
-    // TODO: assert rom loaded correctly
 
     printf("TEST: Test pc = 0x202 after one instruction...\n");
     emulate_cycle();

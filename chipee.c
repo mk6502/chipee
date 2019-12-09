@@ -10,24 +10,23 @@
 // 0x200-0xFFF (512-4095) - Program ROM and work RAM
 //
 
-unsigned char chip8_fontset[80] =
-{ 
-  0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-  0x20, 0x60, 0x20, 0x20, 0x70, // 1
-  0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-  0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-  0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-  0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-  0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-  0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-  0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-  0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-  0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-  0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-  0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-  0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-  0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-  0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+unsigned char chip8_fontset[80] = {
+        0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+        0x20, 0x60, 0x20, 0x20, 0x70, // 1
+        0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+        0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+        0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+        0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+        0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+        0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+        0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+        0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+        0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+        0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+        0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+        0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+        0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+        0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
 // memory
@@ -63,7 +62,7 @@ unsigned char draw_flag = 0;
 unsigned char sound_flag = 0;
 
 void init_cpu() {
-    srand((unsigned int)time(NULL));
+    srand((unsigned int) time(NULL));
 
     // load fonts:
     for (int i = 0; i < 80; i++) {
@@ -71,26 +70,25 @@ void init_cpu() {
     }
 }
 
-int check_rom(char* filename) {
-    FILE* fileptr;
+int check_rom(char *filename) {
+    FILE *fileptr;
 
     if ((fileptr = fopen(filename, "rb"))) {
         return 1;
-    }
-    else {
+    } else {
         return 0;
     }
 }
 
-void load_rom(char* filename) {
-    FILE* fileptr = fopen(filename, "rb");
+void load_rom(char *filename) {
+    FILE *fileptr = fopen(filename, "rb");
 
     // get size of the file for malloc:
     fseek(fileptr, 0, SEEK_END);
     long buffer_size = ftell(fileptr);
     rewind(fileptr);
 
-    char* buffer = (char *)malloc((buffer_size+1) * sizeof(char)); // enough memory for file + \0
+    char *buffer = (char *) malloc((buffer_size + 1) * sizeof(char)); // enough memory for file + \0
     fread(buffer, buffer_size, 1, fileptr);
     fclose(fileptr);
 
@@ -108,7 +106,7 @@ void emulate_cycle() {
     unsigned short x = (op & 0x0F00) >> 8;
     unsigned short y = (op & 0x00F0) >> 4;
 
-    switch(op & 0xF000) {
+    switch (op & 0xF000) {
         case 0x0000:
             switch (op & 0x00FF) {
                 case 0x00E0: // 0x00E0: clear the screen
@@ -150,8 +148,7 @@ void emulate_cycle() {
         case 0x5000: // 0x5XY0: skip next instruction if V[x] == V[y]
             if (V[x] == V[y]) {
                 pc += 4;
-            }
-            else {
+            } else {
                 pc += 2;
             }
             break;
@@ -164,7 +161,7 @@ void emulate_cycle() {
             pc += 2;
             break;
         case 0x8000:
-            switch(op & 0x000F) {
+            switch (op & 0x000F) {
                 case 0x0000: // 0x8XY0: set V[x] = V[y]
                     V[x] = V[y];
                     pc += 2;
@@ -249,13 +246,12 @@ void emulate_cycle() {
             that has a width of 8 pixels and a 
             height of N pixels. Each row of 
             8 pixels is read as bit-coded starting
-            from memory location I; I value doesn’t
-            change after the execution of this 
-            instruction. 
+            from memory location I; I value doesn't
+            change after the execution of this instruction.
             As described above, V[F] is set to 1 
             if any screen pixels are flipped from set
             to unset when the sprite is
-            drawn, and to 0 if that doesn’t happen.
+            drawn, and to 0 if that doesn't happen.
             */
             draw_flag = 1;
 
@@ -362,7 +358,7 @@ void emulate_cycle() {
     if (delay_timer > 0) {
         delay_timer--;
     }
- 
+
     // beep and update sound timer
     if (sound_timer > 0) {
         sound_flag = 1;

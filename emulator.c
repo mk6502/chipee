@@ -4,13 +4,13 @@
 #include "display.h"
 #include "sound.h"
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     if (argc != 2) {
         printf("Usage: chipee rom.ch8\n");
         return 1;
     }
 
-    char* rom_filename = argv[1];
+    char *rom_filename = argv[1];
 
     // initialize CPU
     init_cpu();
