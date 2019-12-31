@@ -13,11 +13,16 @@ extern unsigned char keypad[16];
 extern unsigned char delay_timer;
 extern unsigned char sound_timer;
 extern unsigned char draw_flag;
+extern unsigned char sound_flag;
 
 void init_cpu();
-int check_rom(char* filename);
-void load_rom(char* filename);
+
+int check_rom(char *filename);
+
+void load_rom(char *filename);
+
 void emulate_cycle();
-int main(int argc, char** argv);
+
+int main(int argc, char **argv);
 
 #endif

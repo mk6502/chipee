@@ -2,15 +2,15 @@
 #include <unistd.h>
 #include "chipee.h"
 #include "display.h"
+#include "sound.h"
 
-
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     if (argc != 2) {
         printf("Usage: chipee rom.ch8\n");
         return 1;
     }
 
-    char* rom_filename = argv[1];
+    char *rom_filename = argv[1];
 
     // initialize CPU
     init_cpu();
@@ -27,6 +27,9 @@ int main(int argc, char** argv) {
     // initialize display
     init_chipee_display();
 
+    // initialize sound
+    init_chipee_sound();
+
     // game loop
     while (1) {
         emulate_cycle();
@@ -34,6 +37,10 @@ int main(int argc, char** argv) {
 
         if (should_quit()) {
             break;
+        }
+
+        if (sound_flag) {
+            beep_sound();
         }
 
         if (draw_flag) {
@@ -44,6 +51,7 @@ int main(int argc, char** argv) {
         usleep(1000);
     }
 
+    stop_chipee_sound();
     stop_chipee_display();
     return 0;
 }

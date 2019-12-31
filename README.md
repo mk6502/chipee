@@ -1,13 +1,14 @@
 # Chipee
-Adventures in CHIP-8.
+A simple CHIP-8 emulator meant to be used as a learning tool for others. Minimal cleverness, useful comments, and
+readability are its goals.
 
 # Goals
 
 Chipee's goals are:
 
+* To be a learning tool for others.
 * Simplicity.
 * Code readability.
-* To be a learning tool for others.
 
 # Building
 
@@ -25,7 +26,8 @@ Then, run `make`.
 
 ## Dockerfile
 
-Another option is to use the included Dockerfile. This image will have build prerequisites installed. You will still need `libsdl2-dev` installed to run Chipee.
+Another option is to use the included Dockerfile. This image will have build prerequisites installed.
+You will still need `libsdl2-dev` installed to run Chipee.
 
 To build the Docker image, run:
 
@@ -51,11 +53,11 @@ Build and run the test suite by running:
 
 # FAQ
 
-Q: Why C?
+Q: Why C? \
 A: Simplicity.
 
-Q: Does it support Super CHIP-8?
+Q: Does it support Super CHIP-8? \
 A: No.
 
-Q: Sound?
-A: Not yet!
+Q: Is it any good? \
+A: [Yes](https://news.ycombinator.com/item?id=3067434)
