@@ -20,7 +20,7 @@ Then, run `make`.
 
 ## Ubuntu
 
-To build using Ubuntu, install the `libsdl2-dev` package.
+To build using Ubuntu (18.04 and 20.04 have been tested), install the `libsdl2-dev` package.
 
 Then, run `make`.
 

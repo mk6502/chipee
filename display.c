@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
 #include "display.h"
 
-SDL_Window *screen;
-SDL_Renderer *renderer;
+SDL_Window* screen;
+SDL_Renderer* renderer;
 SDL_Scancode keymappings[16] = {
         SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4,
         SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_R,
@@ -25,7 +25,7 @@ void init_chipee_display() {
     renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_ACCELERATED);
 }
 
-void draw_screen(unsigned char *gfx) {
+void draw_screen(unsigned char* gfx) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -45,11 +45,11 @@ void draw_screen(unsigned char *gfx) {
     SDL_RenderPresent(renderer);
 }
 
-void sdl_event_handler(unsigned char *keypad) {
+void sdl_event_handler(unsigned char* keypad) {
     SDL_Event event;
 
     if (SDL_PollEvent(&event)) {
-        const Uint8 *state = SDL_GetKeyboardState(NULL);
+        const Uint8* state = SDL_GetKeyboardState(NULL);
         switch (event.type) {
             case SDL_QUIT:
                 SHOULD_QUIT = 1;

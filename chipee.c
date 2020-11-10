@@ -70,8 +70,8 @@ void init_cpu() {
     }
 }
 
-int check_rom(char *filename) {
-    FILE *fileptr;
+int check_rom(char* filename) {
+    FILE* fileptr;
 
     if ((fileptr = fopen(filename, "rb"))) {
         return 1;
@@ -80,15 +80,15 @@ int check_rom(char *filename) {
     }
 }
 
-void load_rom(char *filename) {
-    FILE *fileptr = fopen(filename, "rb");
+void load_rom(char* filename) {
+    FILE* fileptr = fopen(filename, "rb");
 
     // get size of the file for malloc:
     fseek(fileptr, 0, SEEK_END);
     long buffer_size = ftell(fileptr);
     rewind(fileptr);
 
-    char *buffer = (char *) malloc((buffer_size + 1) * sizeof(char)); // enough memory for file + \0
+    char* buffer = (char*) malloc((buffer_size + 1) * sizeof(char)); // enough memory for file + \0
     fread(buffer, buffer_size, 1, fileptr);
     fclose(fileptr);
 

@@ -8,9 +8,9 @@ void audio_callback(void *user_data, unsigned char *raw_buffer, int bytes) {
     double sample_rate = 44100.0;
     int amplitude = 28000;
 
-    Sint16 *buffer = (Sint16 *) raw_buffer;
+    Sint16* buffer = (Sint16*) raw_buffer;
     int length = bytes / 2; // 2 bytes per sample for AUDIO_S16SYS
-    int sample_nr = *(int *) user_data;
+    int sample_nr = *(int*) user_data;
 
     for (int i = 0; i < length; i++, sample_nr++) {
         double time = sample_nr / sample_rate;
