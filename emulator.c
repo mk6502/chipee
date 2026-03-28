@@ -5,8 +5,8 @@
 #include "display.h"
 #include "sound.h"
 
-#define CYCLES_PER_FRAME 10
-#define TIMER_INTERVAL_MS (1000 / 60) // ~16.67ms for 60 Hz
+#define CYCLES_PER_FRAME 8
+#define FRAME_DURATION_MS (1000 / 60) // ~16.67ms for 60 fps
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -37,10 +37,10 @@ int main(int argc, char** argv) {
     init_chipee_sound();
 
     // game loop
-    Uint32 last_timer_tick = SDL_GetTicks();
-
     while (1) {
-        // execute multiple CPU cycles per frame
+        Uint32 frame_start = SDL_GetTicks();
+
+        // execute CPU cycles for this frame (~480 cycles/sec at 60 fps)
         for (int i = 0; i < CYCLES_PER_FRAME; i++) {
             emulate_cycle();
         }
@@ -52,12 +52,8 @@ int main(int argc, char** argv) {
             break;
         }
 
-        // update timers at 60 Hz
-        Uint32 now = SDL_GetTicks();
-        if (now - last_timer_tick >= TIMER_INTERVAL_MS) {
-            update_timers();
-            last_timer_tick = now;
-        }
+        // update timers once per frame = 60 Hz
+        update_timers();
 
         // manage sound based on sound_timer
         if (sound_timer > 0) {
@@ -70,8 +66,11 @@ int main(int argc, char** argv) {
             draw_screen(gfx);
         }
 
-        // sleep to target ~60 fps
-        usleep(1000);
+        // sleep remainder of frame to target 60 fps
+        Uint32 frame_time = SDL_GetTicks() - frame_start;
+        if (frame_time < FRAME_DURATION_MS) {
+            SDL_Delay(FRAME_DURATION_MS - frame_time);
+        }
     }
 
     stop_chipee_sound();
