@@ -130,8 +130,6 @@ int load_rom(char* filename) {
 }
 
 void emulate_cycle() {
-    draw_flag = 0;
-    sound_flag = 0;
     unsigned short op = memory[pc] << 8 | memory[pc + 1];
     unsigned short x = (op & 0x0F00) >> 8;
     unsigned short y = (op & 0x00F0) >> 4;

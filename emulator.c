@@ -64,6 +64,7 @@ int main(int argc, char** argv) {
 
         if (draw_flag) {
             draw_screen(gfx);
+            draw_flag = 0;
         }
 
         // sleep remainder of frame to target 60 fps
