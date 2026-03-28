@@ -4,22 +4,33 @@
 
 // all sound-related code is almost verbatim from https://stackoverflow.com/a/45002609
 
+static int sample_nr = 0;
+
 void audio_callback(void *user_data, unsigned char *raw_buffer, int bytes) {
     double sample_rate = 44100.0;
     int amplitude = 28000;
 
     Sint16* buffer = (Sint16*) raw_buffer;
     int length = bytes / 2; // 2 bytes per sample for AUDIO_S16SYS
-    int sample_nr = *(int*) user_data;
+    int nr = *(int*) user_data;
 
-    for (int i = 0; i < length; i++, sample_nr++) {
-        double time = sample_nr / sample_rate;
+    for (int i = 0; i < length; i++, nr++) {
+        double time = nr / sample_rate;
         buffer[i] = (Sint16)(amplitude * sin(2.0f * M_PI * 441.0f * time)); // render 441 HZ sine wave
     }
 }
 
 void beep_sound() {
-    int sample_nr = 0;
+    SDL_PauseAudio(0); // start playing sound
+    SDL_Delay(25); // wait while sound is playing
+    SDL_PauseAudio(1); // stop playing sound
+}
+
+void init_chipee_sound() {
+    if (SDL_Init(SDL_INIT_AUDIO) != 0) {
+        SDL_Log("Failed to initialize SDL: %s", SDL_GetError());
+        return;
+    }
 
     SDL_AudioSpec want;
     SDL_zero(want);
@@ -35,17 +46,6 @@ void beep_sound() {
     if (SDL_OpenAudio(&want, &have) != 0)
         SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "Failed to open audio: %s", SDL_GetError());
     if (want.format != have.format) SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "Failed to get the desired AudioSpec");
-
-    SDL_PauseAudio(0); // start playing sound
-    SDL_Delay(25); // wait while sound is playing
-    SDL_PauseAudio(1); // stop playing sound
-    SDL_CloseAudio();
-}
-
-void init_chipee_sound() {
-    if (SDL_Init(SDL_INIT_AUDIO) != 0) {
-        SDL_Log("Failed to initialize SDL: %s", SDL_GetError());
-    }
 }
 
 void stop_chipee_sound() {
