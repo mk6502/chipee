@@ -5,7 +5,8 @@ void init_chipee_sound();
 
 void audio_callback(void *user_data, unsigned char *raw_buffer, int bytes);
 
-void beep_sound();
+void start_sound();
+void stop_sound();
 
 void stop_chipee_sound();
 

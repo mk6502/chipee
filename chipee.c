@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include "chipee.h"
 
@@ -61,12 +62,33 @@ unsigned char draw_flag = 0;
 // whether we need to play a sound in this cycle
 unsigned char sound_flag = 0;
 
+// previous keypad state for detecting key releases (used by FX0A)
+unsigned char prev_keypad[16] = {0};
+// key being waited on for FX0A (-1 = not waiting)
+signed char waiting_for_key = -1;
+
 void init_cpu() {
     srand((unsigned int) time(NULL));
 
-    // load fonts:
+    // reset all state
+    memset(memory, 0, sizeof(memory));
+    memset(V, 0, sizeof(V));
+    memset(gfx, 0, sizeof(gfx));
+    memset(stack, 0, sizeof(stack));
+    memset(keypad, 0, sizeof(keypad));
+    memset(prev_keypad, 0, sizeof(prev_keypad));
+    I = 0;
+    pc = 0x200;
+    sp = 0;
+    delay_timer = 0;
+    sound_timer = 0;
+    draw_flag = 0;
+    sound_flag = 0;
+    waiting_for_key = -1;
+
+    // load fonts at 0x050:
     for (int i = 0; i < 80; i++) {
-        memory[i] = chip8_fontset[i];
+        memory[0x50 + i] = chip8_fontset[i];
     }
 }
 
@@ -74,13 +96,14 @@ int check_rom(char* filename) {
     FILE* fileptr;
 
     if ((fileptr = fopen(filename, "rb"))) {
+        fclose(fileptr);
         return 1;
     } else {
         return 0;
     }
 }
 
-void load_rom(char* filename) {
+int load_rom(char* filename) {
     FILE* fileptr = fopen(filename, "rb");
 
     // get size of the file for malloc:
@@ -88,7 +111,13 @@ void load_rom(char* filename) {
     long buffer_size = ftell(fileptr);
     rewind(fileptr);
 
-    char* buffer = (char*) malloc((buffer_size + 1) * sizeof(char)); // enough memory for file + \0
+    if (buffer_size > 4096 - 512) {
+        printf("ROM too large! Max size is %d bytes, got %ld bytes.\n", 4096 - 512, buffer_size);
+        fclose(fileptr);
+        return 0;
+    }
+
+    char* buffer = (char*) malloc(buffer_size * sizeof(char));
     fread(buffer, buffer_size, 1, fileptr);
     fclose(fileptr);
 
@@ -97,6 +126,7 @@ void load_rom(char* filename) {
     }
 
     free(buffer);
+    return 1;
 }
 
 void emulate_cycle() {
@@ -113,11 +143,16 @@ void emulate_cycle() {
                     for (int i = 0; i < 64 * 32; i++) {
                         gfx[i] = 0;
                     }
+                    draw_flag = 1;
                     pc += 2;
                     break;
                 case 0x00EE: // 0x00EE: return from subroutine
-                    pc = stack[sp];
+                    if (sp == 0) {
+                        printf("Stack underflow!\n");
+                        break;
+                    }
                     sp--;
+                    pc = stack[sp];
                     pc += 2;
                     break;
                 default:
@@ -129,8 +164,12 @@ void emulate_cycle() {
             pc = op & 0x0FFF;
             break;
         case 0x2000: // 0x2NNN: call subroutine at NNN
+            if (sp >= 16) {
+                printf("Stack overflow!\n");
+                break;
+            }
+            stack[sp] = pc; // store return address
             sp++; // increment the position we are at on the stack
-            stack[sp] = pc; // we will need to return eventually, so keep our counter in the stack
             pc = op & 0x0FFF;
             break;
         case 0x3000: // 0x3XNN: skip next instruction if V[x] == NN
@@ -168,56 +207,55 @@ void emulate_cycle() {
                     break;
                 case 0x0001: // 0x8XY1: set V[x] = V[x] OR V[y]
                     V[x] = V[x] | V[y];
+                    V[0xF] = 0;
                     pc += 2;
                     break;
                 case 0x0002: // 0x8XY2: set V[x] = V[x] AND V[y]
                     V[x] = V[x] & V[y];
+                    V[0xF] = 0;
                     pc += 2;
                     break;
                 case 0x0003: // 0x8XY3: set V[x] = V[x] XOR V[y]
                     V[x] = V[x] ^ V[y];
+                    V[0xF] = 0;
                     pc += 2;
                     break;
-                case 0x0004: // 0x8XY4: set V[x] = V[x] + V[y], set V[F] = carry
-                    V[0xF] = 0;
-                    if ((V[x] + V[y]) > 0xFF) {
-                        V[0xF] = 1;
-                    }
-                    V[x] += V[y];
+                case 0x0004: { // 0x8XY4: set V[x] = V[x] + V[y], set V[F] = carry
+                    unsigned short sum = V[x] + V[y];
+                    unsigned char carry = (sum > 0xFF) ? 1 : 0;
+                    V[x] = sum & 0xFF;
+                    V[0xF] = carry;
                     pc += 2;
                     break;
-                case 0x0005: // 0x8XY5: set V[x] = V[x] - V[y], set V[F] = NOT borrow
-                    // If V[x] > V[y], set V[F] to 1, otherwise 0.
-                    // Then set V[x] = V[x] - V[y]
-                    V[0xF] = 0;
-                    if (V[x] > V[y]) {
-                        V[0xF] = 1;
-                    }
+                }
+                case 0x0005: { // 0x8XY5: set V[x] = V[x] - V[y], set V[F] = NOT borrow
+                    unsigned char not_borrow = (V[x] >= V[y]) ? 1 : 0;
                     V[x] -= V[y];
+                    V[0xF] = not_borrow;
                     pc += 2;
                     break;
-                case 0x0006: // 0x8XY6: set V[x] = V[x] SHR 1
-                    // Set V[F] to the remainder of dividing by 2, then divide V[x] by 2
-                    V[0xF] = V[x] % 2;
-                    V[x] /= 2;
+                }
+                case 0x0006: { // 0x8XY6: set V[x] = V[x] SHR 1
+                    unsigned char lsb = V[x] & 1;
+                    V[x] >>= 1;
+                    V[0xF] = lsb;
                     pc += 2;
                     break;
-                case 0x0007: // 0x8XY7: set V[x] = V[y] - V[x], set V[F] = NOT borrow
-                    // If V[y] > V[x], set V[F] to 1, otherwise 0. Then set V[x] = V[y] - V[x]
-                    V[0xF] = 0;
-                    if (V[y] > V[x]) {
-                        V[0xF] = 1;
-                    }
+                }
+                case 0x0007: { // 0x8XY7: set V[x] = V[y] - V[x], set V[F] = NOT borrow
+                    unsigned char not_borrow = (V[y] >= V[x]) ? 1 : 0;
                     V[x] = V[y] - V[x];
+                    V[0xF] = not_borrow;
                     pc += 2;
                     break;
-                case 0x000E: // 0x8XYE: Set V[x] = V[x] SHL 1
-                    // If the most-significant bit of V[x] is 1, set V[F] to 1,
-                    // otherwise set to 0. Then V[x] is multiplied by 2.
-                    V[0xF] = (V[x] >> 7);
-                    V[x] *= 2;
+                }
+                case 0x000E: { // 0x8XYE: Set V[x] = V[x] SHL 1
+                    unsigned char msb = (V[x] >> 7) & 1;
+                    V[x] <<= 1;
+                    V[0xF] = msb;
                     pc += 2;
                     break;
+                }
                 default:
                     printf("Unknown op: 0x%X\n", op);
                     break;
@@ -257,16 +295,21 @@ void emulate_cycle() {
 
             unsigned short height = op & 0x000F;
             unsigned short pixel;
+            unsigned char x_coord = V[x] % 64;
+            unsigned char y_coord = V[y] % 32;
 
             V[0xF] = 0;
             for (int yline = 0; yline < height; yline++) {
+                if (y_coord + yline >= 32) break; // clip vertically
                 pixel = memory[I + yline];
                 for (int xline = 0; xline < 8; xline++) {
+                    if (x_coord + xline >= 64) break; // clip horizontally
                     if ((pixel & (0x80 >> xline)) != 0) {
-                        if (gfx[(V[x] + xline + ((V[y] + yline) * 64))] == 1) {
+                        int idx = (x_coord + xline) + ((y_coord + yline) * 64);
+                        if (gfx[idx] == 1) {
                             V[0xF] = 1;
                         }
-                        gfx[V[x] + xline + ((V[y] + yline) * 64)] ^= 1;
+                        gfx[idx] ^= 1;
                     }
                 }
             }
@@ -297,12 +340,21 @@ void emulate_cycle() {
                     V[x] = delay_timer;
                     pc += 2;
                     break;
-                case 0x000A: // 0xFX0A: wait for a key press, then store the value of the key in V[x]
-                    for (int i = 0; i < 16; i++) {
-                        if (keypad[i]) {
-                            V[x] = i;
+                case 0x000A: // 0xFX0A: wait for a key press then release
+                    if (waiting_for_key >= 0) {
+                        // waiting for key release
+                        if (!keypad[(int)waiting_for_key]) {
+                            V[x] = waiting_for_key;
+                            waiting_for_key = -1;
                             pc += 2;
-                            break;
+                        }
+                    } else {
+                        // waiting for key press
+                        for (int i = 0; i < 16; i++) {
+                            if (keypad[i] && !prev_keypad[i]) {
+                                waiting_for_key = i;
+                                break;
+                            }
                         }
                     }
                     break;
@@ -319,7 +371,7 @@ void emulate_cycle() {
                     pc += 2;
                     break;
                 case 0x0029: // 0xFX29: set I = location of sprite for digit V[x]
-                    I = V[x] * 5; // each digit is 5 bytes long
+                    I = 0x50 + (V[x] * 5); // each digit is 5 bytes, starting at 0x050
                     pc += 2;
                     break;
                 case 0x0033: // 0xFX33: store BCD(V[x]) in I, I+1, I+2
@@ -354,14 +406,19 @@ void emulate_cycle() {
             break;
     }
 
-    // update delay timer
+}
+
+void update_timers() {
     if (delay_timer > 0) {
         delay_timer--;
     }
 
-    // beep and update sound timer
     if (sound_timer > 0) {
         sound_flag = 1;
         sound_timer--;
     }
+}
+
+void update_prev_keypad() {
+    memcpy(prev_keypad, keypad, sizeof(keypad));
 }

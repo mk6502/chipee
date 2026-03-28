@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <SDL2/SDL.h>
 #include "chipee.h"
 #include "display.h"
 #include "sound.h"
+
+#define CYCLES_PER_FRAME 16
+#define FRAME_DURATION_MS (1000 / 60) // ~16.67ms for 60 fps
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -22,7 +26,9 @@ int main(int argc, char** argv) {
     }
 
     // load ROM
-    load_rom(rom_filename);
+    if (!load_rom(rom_filename)) {
+        return 1;
+    }
 
     // initialize display
     init_chipee_display();
@@ -32,23 +38,39 @@ int main(int argc, char** argv) {
 
     // game loop
     while (1) {
-        emulate_cycle();
+        Uint32 frame_start = SDL_GetTicks();
+
+        // execute CPU cycles for this frame (~960 cycles/sec at 60 fps)
+        for (int i = 0; i < CYCLES_PER_FRAME; i++) {
+            emulate_cycle();
+        }
+
         sdl_event_handler(keypad);
+        update_prev_keypad();
 
         if (should_quit()) {
             break;
         }
 
-        if (sound_flag) {
-            beep_sound();
+        // manage sound based on sound_timer (check before decrement)
+        if (sound_timer > 0) {
+            start_sound();
+        } else {
+            stop_sound();
         }
+
+        // update timers once per frame = 60 Hz
+        update_timers();
 
         if (draw_flag) {
             draw_screen(gfx);
         }
 
-        // hack to limit fps
-        usleep(1000);
+        // sleep remainder of frame to target 60 fps
+        Uint32 frame_time = SDL_GetTicks() - frame_start;
+        if (frame_time < FRAME_DURATION_MS) {
+            SDL_Delay(FRAME_DURATION_MS - frame_time);
+        }
     }
 
     stop_chipee_sound();
