@@ -39,6 +39,7 @@ void beep_sound() {
     SDL_PauseAudio(0); // start playing sound
     SDL_Delay(25); // wait while sound is playing
     SDL_PauseAudio(1); // stop playing sound
+    SDL_CloseAudio();
 }
 
 void init_chipee_sound() {
