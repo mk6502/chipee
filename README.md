@@ -1,6 +1,5 @@
 # Chipee
-A simple CHIP-8 emulator meant to be used as a learning tool for others. Minimal cleverness, useful comments, and
-readability are its goals.
+A simple CHIP-8 emulator meant to be used as a learning tool for others.
 
 # Goals
 
@@ -14,7 +13,7 @@ Chipee's goals are:
 
 ## macOS
 
-On macOS, install the `sdl2` package from Homebrew.
+On macOS (including macOS 26), install the `sdl2` package from Homebrew.
 
 Then, run `make`.
 
@@ -51,6 +50,19 @@ Build and run the test suite by running:
 
     make test
 
+# Controls
+
+The CHIP-8 keypad is a 16-key hexadecimal layout mapped to the keyboard as follows:
+
+| CHIP-8 keypad | Keyboard |
+|:---:|:---:|
+| `1` `2` `3` `C` | `1` `2` `3` `4` |
+| `4` `5` `6` `D` | `Q` `W` `E` `R` |
+| `7` `8` `9` `E` | `A` `S` `D` `F` |
+| `A` `0` `B` `F` | `Z` `X` `C` `V` |
+
+Press `Esc` to quit.
+
 # FAQ
 
 Q: Why C? \
@@ -58,6 +70,3 @@ A: Simplicity.
 
 Q: Does it support Super CHIP-8? \
 A: No.
-
-Q: Is it any good? \
-A: [Yes](https://news.ycombinator.com/item?id=3067434)
