@@ -52,15 +52,15 @@ int main(int argc, char** argv) {
             break;
         }
 
-        // update timers once per frame = 60 Hz
-        update_timers();
-
-        // manage sound based on sound_timer
+        // manage sound based on sound_timer (check before decrement)
         if (sound_timer > 0) {
             start_sound();
         } else {
             stop_sound();
         }
+
+        // update timers once per frame = 60 Hz
+        update_timers();
 
         if (draw_flag) {
             draw_screen(gfx);

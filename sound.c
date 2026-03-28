@@ -40,7 +40,7 @@ void init_chipee_sound() {
     want.freq = 44100; // number of samples per second
     want.format = AUDIO_S16SYS;
     want.channels = 2;
-    want.samples = 2048; // buffer-size
+    want.samples = 512; // buffer-size (small for low-latency short beeps)
     want.callback = audio_callback; // function SDL calls periodically to refill the buffer
     want.userdata = &sample_nr; // counter, keeping track of current sample number
 
