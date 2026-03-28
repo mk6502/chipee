@@ -3,11 +3,29 @@
 
 SDL_Window* screen;
 SDL_Renderer* renderer;
+// Standard CHIP-8 keypad mapping:
+// CHIP-8 key → Keyboard key
+// 1 2 3 C      1 2 3 4
+// 4 5 6 D      Q W E R
+// 7 8 9 E      A S D F
+// A 0 B F      Z X C V
 SDL_Scancode keymappings[16] = {
-        SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4,
-        SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_R,
-        SDL_SCANCODE_A, SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F,
-        SDL_SCANCODE_Z, SDL_SCANCODE_X, SDL_SCANCODE_C, SDL_SCANCODE_V
+        SDL_SCANCODE_X, // 0
+        SDL_SCANCODE_1, // 1
+        SDL_SCANCODE_2, // 2
+        SDL_SCANCODE_3, // 3
+        SDL_SCANCODE_Q, // 4
+        SDL_SCANCODE_W, // 5
+        SDL_SCANCODE_E, // 6
+        SDL_SCANCODE_R, // 7
+        SDL_SCANCODE_A, // 8
+        SDL_SCANCODE_S, // 9
+        SDL_SCANCODE_D, // A
+        SDL_SCANCODE_F, // B
+        SDL_SCANCODE_Z, // C
+        SDL_SCANCODE_4, // D
+        SDL_SCANCODE_C, // E
+        SDL_SCANCODE_V  // F
 };
 int SHOULD_QUIT = 0;
 
@@ -48,22 +66,20 @@ void draw_screen(unsigned char* gfx) {
 void sdl_event_handler(unsigned char* keypad) {
     SDL_Event event;
 
-    if (SDL_PollEvent(&event)) {
-        const Uint8* state = SDL_GetKeyboardState(NULL);
-        switch (event.type) {
-            case SDL_QUIT:
-                SHOULD_QUIT = 1;
-                break;
-            default:
-                if (state[SDL_SCANCODE_ESCAPE]) {
-                    SHOULD_QUIT = 1;
-                }
-
-                for (int keycode = 0; keycode < 16; keycode++) {
-                    keypad[keycode] = state[keymappings[keycode]];
-                }
-                break;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            SHOULD_QUIT = 1;
+            return;
         }
+    }
+
+    const Uint8* state = SDL_GetKeyboardState(NULL);
+    if (state[SDL_SCANCODE_ESCAPE]) {
+        SHOULD_QUIT = 1;
+    }
+
+    for (int keycode = 0; keycode < 16; keycode++) {
+        keypad[keycode] = state[keymappings[keycode]];
     }
 }
 

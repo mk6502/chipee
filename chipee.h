@@ -10,6 +10,8 @@ extern unsigned char gfx[64 * 32];
 extern unsigned short stack[16];
 extern unsigned short sp;
 extern unsigned char keypad[16];
+extern unsigned char prev_keypad[16];
+extern signed char waiting_for_key;
 extern unsigned char delay_timer;
 extern unsigned char sound_timer;
 extern unsigned char draw_flag;
@@ -17,7 +19,9 @@ extern unsigned char sound_flag;
 
 void init_cpu();
 int check_rom(char* filename);
-void load_rom(char* filename);
+int load_rom(char* filename);
 void emulate_cycle();
+void update_timers();
+void update_prev_keypad();
 
 #endif

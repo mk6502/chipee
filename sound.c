@@ -16,14 +16,16 @@ void audio_callback(void *user_data, unsigned char *raw_buffer, int bytes) {
 
     for (int i = 0; i < length; i++, nr++) {
         double time = nr / sample_rate;
-        buffer[i] = (Sint16)(amplitude * sin(2.0f * M_PI * 441.0f * time)); // render 441 HZ sine wave
+        buffer[i] = (Sint16)(amplitude * sin(2.0f * M_PI * 440.0f * time)); // render 440 Hz sine wave
     }
 }
 
-void beep_sound() {
-    SDL_PauseAudio(0); // start playing sound
-    SDL_Delay(25); // wait while sound is playing
-    SDL_PauseAudio(1); // stop playing sound
+void start_sound() {
+    SDL_PauseAudio(0);
+}
+
+void stop_sound() {
+    SDL_PauseAudio(1);
 }
 
 void init_chipee_sound() {
