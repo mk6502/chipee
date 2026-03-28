@@ -5,7 +5,7 @@
 #include "display.h"
 #include "sound.h"
 
-#define CYCLES_PER_FRAME 8
+#define CYCLES_PER_FRAME 16
 #define FRAME_DURATION_MS (1000 / 60) // ~16.67ms for 60 fps
 
 int main(int argc, char** argv) {
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     while (1) {
         Uint32 frame_start = SDL_GetTicks();
 
-        // execute CPU cycles for this frame (~480 cycles/sec at 60 fps)
+        // execute CPU cycles for this frame (~960 cycles/sec at 60 fps)
         for (int i = 0; i < CYCLES_PER_FRAME; i++) {
             emulate_cycle();
         }
