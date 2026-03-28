@@ -25,7 +25,7 @@ void beep_sound() {
     SDL_zero(want);
 
     want.freq = 44100; // number of samples per second
-    want.format = AUDIO_F32;
+    want.format = AUDIO_S16SYS;
     want.channels = 2;
     want.samples = 2048; // buffer-size
     want.callback = audio_callback; // function SDL calls periodically to refill the buffer
